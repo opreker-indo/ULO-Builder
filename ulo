@@ -4,7 +4,6 @@
 # 
 # Licensed under the MIT.
 # 
-lolcat=/usr/games/lolcat
 
 ver="1.3"
 tmp="./tmp"
@@ -37,10 +36,9 @@ die() {
 
 check_depedencies() {
     echo -e "Preparing install ulo dependies"
-    req=(lolcat pigz aria2 wget jq)
+    req=(pigz aria2 wget jq)
     if command -v pacman &>/dev/null; then
-        lolcat="/usr/bin/lolcat"  # Update lolcat path for Arch Linux
-        list=$(pacman -Qq | grep -E "lolcat|pigz|aria2|wget|jq")
+        list=$(pacman -Qq | grep -E "pigz|aria2|wget|jq")
         for req_pkg in ${req[*]}; do
             if echo "$list" | grep -q "^$req_pkg$"; then
                 echo "  $req_pkg Installed"
@@ -51,7 +49,7 @@ check_depedencies() {
             fi
         done
     else
-        list=$(dpkg -l | grep -E "lolcat|pigz|aria2|wget|jq" | awk '{ print $2 }')
+        list=$(dpkg -l | grep -E "pigz|aria2|wget|jq" | awk '{ print $2 }')
         for req_pkg in ${req[*]}; do
             for lst_pkg in $list; do
                 stat=0
@@ -70,7 +68,7 @@ check_depedencies() {
             fi
         done
     fi
-    echo -e "Done...!!!" | $lolcat -a -d 20
+    echo -e "Done...!!!"
 }
 
 custom_rootfs_files() {
@@ -86,7 +84,7 @@ custom_rootfs_files() {
     else
         read -p "" opt 
     fi
-    if [ "$opt" = "y" ] || [ "$opt" = "Y" ]; then
+    if [ "$opt" = "n" ] || [ "$opt" = "N" ]; then
         echo -e "Downloading ROOTFS Files..."
         local cnt=0
         local json_data=`curl -s $long_url`
@@ -138,17 +136,17 @@ download_requirement_files() {
     [ -d "${tmp_path}" ] || mkdir $tmp_path
 
     if [ ! -f "${tmp_path}/data.zip" ]; then
-        echo -e "Downloading KERNEL, ROOTFS, & Driver Firmware" | $lolcat -a -d 1
+        echo -e "Downloading KERNEL, ROOTFS, & Driver Firmware"
         aria2c --out=${tmp_path}/data.zip "${repos}/archive/refs/heads/main.zip"
-        echo -e "Unzipping KERNEL, ROOTFS, & Driver Firmware" | $lolcat -a -d 1
+        echo -e "Unzipping KERNEL, ROOTFS, & Driver Firmware"
         unzip -q $tmp_path/data.zip -d $tmp_path
         cp -rf $tmp_path/ULO-repository-main/kernel ./core/
         cp -rf $tmp_path/ULO-repository-main/rootfs ./
         cp -rf $tmp_path/ULO-repository-main/firmware $fwdriver_path/
-        echo -e "Done..." | $lolcat -a -d 5
+        echo -e "Done..."
         rm -r $tmp_path
     fi
-    echo -e "All required files are present." | $lolcat -a -d 1
+    echo -e "All required files are present."
     custom_rootfs_files
     find_devices
     find_rootfs
@@ -181,11 +179,11 @@ kernel_checker() {
     echo $rockchip | grep -iq $device && is_rockchip=true
     
     if [ $is_amlogic = true ] && [ $kinfo = "amlogic" ]; then
-        [ $cmdx = false ] && echo -e "${kernel}\n" | $lolcat -a -d 5
+        [ $cmdx = false ] && echo -e "${kernel}\n"
     elif [ $is_allwinner = true ] && [ $kinfo = "allwinner" ]; then
-        [ $cmdx = false ] && echo -e "${kernel}\n" | $lolcat -a -d 5
+        [ $cmdx = false ] && echo -e "${kernel}\n"
     elif [ $is_rockchip = true ] && [ $kinfo = "rockchip" ]; then
-        [ $cmdx = false ] && echo -e "${kernel}\n" | $lolcat -a -d 5
+        [ $cmdx = false ] && echo -e "${kernel}\n"
     elif [ $cmdx = true ]; then
         die "This kernel is for ${kinfo} devices!!!"
     else
@@ -229,21 +227,21 @@ find_rootfs() {
 
 choose_device() {
     local i=0
-    echo -e "Chipset: " | $lolcat -a -d 5
+    echo -e "Chipset: "
     choose_option "${devices[*]}" ${#devices[*]}
     local opt=$?
     device=${devices[opt]}
     devices=($device)
-    echo -e "${device}\n" | $lolcat -a -d 5
+    echo -e "${device}\n"
 }
 
 choose_rootfs() {
     local i=0
-    echo -e "ROOTFS: " | $lolcat -a -d 5
+    echo -e "ROOTFS: "
     choose_option "${rootfs[*]}" ${#rootfs[*]}
     local opt=$?
     firmware=${rootfs[opt]}
-    echo -e "${firmware}\n" | $lolcat -a -d 5
+    echo -e "${firmware}\n"
     echo $firmware > $rootfs_path/rootfs.log
 }
 choose_kernel() {
@@ -263,7 +261,7 @@ choose_kernel() {
     done
 
     # Show filtered kernels
-    echo -e "Kernel:" | $lolcat -a -d 5
+    echo -e "Kernel:"
     choose_option "${filtered_kernels[*]}" ${#filtered_kernels[*]} "kernel"
     local opt=$?
     kernel=${filtered_kernels[opt]}
@@ -300,7 +298,7 @@ choose_option() {
     [ "$len" = 1 ] && return 0
 
     while [ $cnt -lt 3 ]; do
-        echo "Select Number:"  | $lolcat -a -d 5 
+        echo "Select Number:" 
         read -p "" opt 
         if [ ! "$opt" ]; then
             opt=0
@@ -583,8 +581,8 @@ set_rootsize() {
     local cnt=0
 
     while [ $cnt -lt 3 ]; do
-        echo "Your rootfs size" | $lolcat -a -d 5
-        echo "Input number (256 512 640 768 1024 1536) default ${minsize}" | $lolcat -a -d 5
+        echo "Your rootfs size"
+        echo "Input number (256 512 640 768 1024 1536) default ${minsize}"
         read -p "" rootsize
         if [ ! "$rootsize" ]; then
             rootsize=$minsize
@@ -751,7 +749,7 @@ echo -e "
                               By DBAI
 ----------------------------------------------------------------------
 ======================================================================
-" | $lolcat -a -d 5
+"
 [ $(id -u) = 0 ] || die "please run this script as root"
 
 check_requirement_files
@@ -861,7 +859,7 @@ done
 [ "$rootsize" ] || set_rootsize
 
 unpack_openwrt
-echo "Building on progress..." | $lolcat -a -d 5
+echo "Building on progress..."
 
 for kernel in ${kernels[*]}; do
     for device in ${devices[*]}; do
@@ -881,17 +879,17 @@ echo -e "Build Information :
     Kernel      = $kernel
     Rootfs      = $(cat ${rootfs_path}/rootfs.log | cut -d '-' -f1-3)
     Size        = $Total_size M
-    U-boot      = ${uboot}" | $lolcat -a -d 5
-echo "    Output file = out/$device/$(cat ${rootfs_path}/rootfs.log | cut -d '-' -f1-3)-$device-k$kernel.img.gz" | $lolcat -a -d 5
+    U-boot      = ${uboot}"
+echo "    Output file = out/$device/$(cat ${rootfs_path}/rootfs.log | cut -d '-' -f1-3)-$device-k$kernel.img.gz"
 cleaning 0
 
 pigz -qf $out/$device/$(cat ${rootfs_path}/rootfs.log | cut -d '-' -f1-3)-$device-k$kernel.img || gzip $out/$device/$(cat ${rootfs_path}/rootfs.log | cut -d '-' -f1-3)-$device-k$kernel.img
 tot_time=$(($SECONDS - $start_cnt))
 build_time=$(($SECONDS - $start_build))
 
-echo "    Build Time  = $(($build_time/60))m $(($build_time%60))s" | $lolcat -a -d 5
-echo "    Total Time  = $(($tot_time/60))m $(($tot_time%60))s" | $lolcat -a -d 5
-echo -e 'Done...' | $lolcat -a -d 5
+echo "    Build Time  = $(($build_time/60))m $(($build_time%60))s"
+echo "    Total Time  = $(($tot_time/60))m $(($tot_time%60))s"
+echo -e 'Done...'
 echo -e ""
 
 # Add option to burn the image
