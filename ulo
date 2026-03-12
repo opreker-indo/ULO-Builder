@@ -22,10 +22,10 @@ rootfs_path="./rootfs"
 fwdriver_path="./core/root/lib"
 
 # Kernel & Firmware Repository
-repos="https://github.com/chanz-x/ULO-repository"
+repos="https://github.com/syntax-xidz/ULO-repository"
 
 # Custom ROOTFS Repository on releases
-rootfs_repo="chanz-x/rootfs-openwrt"
+rootfs_repo="syntax-xidz/rootfs-openwrt"
 
 start_cnt=$SECONDS
 
@@ -84,7 +84,7 @@ custom_rootfs_files() {
     else
         read -p "" opt 
     fi
-    if [ "$opt" = "n" ] || [ "$opt" = "N" ]; then
+    if [ "$opt" = "y" ] || [ "$opt" = "Y" ]; then
         echo -e "Downloading ROOTFS Files..."
         local cnt=0
         local json_data=`curl -s $long_url`
